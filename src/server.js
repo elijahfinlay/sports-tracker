@@ -33,8 +33,11 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(express.static(path.join(__dirname, '..', 'public')));
 
+// Keep the session DB next to the main DB so a single mounted volume covers both.
+const sessionDir = path.dirname(process.env.DATABASE_PATH || './data/sports.db');
+
 app.use(session({
-  store: new SQLiteStore({ db: 'sessions.db', dir: './data' }),
+  store: new SQLiteStore({ db: 'sessions.db', dir: sessionDir }),
   secret: process.env.SESSION_SECRET || 'dev-only-not-secure',
   resave: false,
   saveUninitialized: false,
