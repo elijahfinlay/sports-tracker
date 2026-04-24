@@ -43,14 +43,21 @@ async function triggerCall(gameId, opts = {}) {
       from_number: from,
       to_number: contact.phone,
       override_agent_id: agent,
-      retell_llm_dynamic_variables: {
-        coach_name: contact.name,
-        outlet_name: settings.get('outlet_name'),
-        school: game.school_name,
-        sport: game.sport_name,
-        opponent: game.opponent || 'their opponent',
-        game_date: game.game_date,
-      },
+      retell_llm_dynamic_variables: (() => {
+        const parts = (contact.name || '').trim().split(/\s+/);
+        const first = parts[0] || '';
+        const last = parts.length > 1 ? parts[parts.length - 1] : first;
+        return {
+          coach_name: contact.name,         // full name, e.g. "John Smith"
+          coach_first_name: first,          // "John"
+          coach_last_name: last,            // "Smith" — best for "Hey Coach {{coach_last_name}}"
+          outlet_name: settings.get('outlet_name'),
+          school: game.school_name,
+          sport: game.sport_name,
+          opponent: game.opponent || 'their opponent',
+          game_date: game.game_date,
+        };
+      })(),
       metadata: { game_id: String(gameId), is_retry: !!opts.isRetry, manual: !!opts.manual },
     }),
   });
