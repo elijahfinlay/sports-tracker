@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Roseburg Sports Automation — Dashboard Sitemap</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+body { font-family:'DM Sans',sans-serif; background:#FAFAFA; color:#1A1A1A; padding:40px 20px; }
+.container { max-width:800px; margin:0 auto; }
+h1 { font-size:20px; font-weight:600; margin-bottom:4px; }
+.subtitle { font-size:13px; color:#888; margin-bottom:36px; }
+
+.sitemap { display:flex; flex-direction:column; gap:0; }
+
+/* Root node */
+.root { background:#fff; border:1.5px solid #1A1A1A; border-radius:10px; padding:14px 20px; text-align:center; margin:0 auto 0; width:260px; }
+.root-title { font-size:15px; font-weight:600; }
+.root-desc { font-size:11px; color:#888; margin-top:2px; }
+
+/* Trunk line */
+.trunk { width:1px; height:24px; background:#CCC; margin:0 auto; }
+
+/* Level container */
+.level { display:flex; gap:10px; flex-wrap:wrap; justify-content:center; margin-bottom:0; position:relative; }
+.level::before { content:''; position:absolute; top:0; left:50%; transform:translateX(-50%); width:calc(100% - 80px); height:1px; background:#DDD; }
+
+/* Page card */
+.page { background:#fff; border:1px solid #E2E0DB; border-radius:10px; padding:12px 16px; width:170px; position:relative; }
+.page::before { content:''; position:absolute; top:-12px; left:50%; width:1px; height:12px; background:#CCC; }
+.page-title { font-size:13px; font-weight:500; margin-bottom:4px; }
+.page-features { list-style:none; }
+.page-features li { font-size:11px; color:#777; line-height:1.6; padding-left:10px; position:relative; }
+.page-features li::before { content:''; position:absolute; left:0; top:7px; width:4px; height:4px; border-radius:50%; background:#CCC; }
+
+/* Sub-pages */
+.sub-trunk { width:1px; height:16px; background:#CCC; margin:0 auto; }
+.subpages { display:flex; gap:8px; justify-content:center; flex-wrap:wrap; margin-top:0; }
+.subpage { background:#F8F7F5; border:1px solid #E8E6E1; border-radius:8px; padding:8px 12px; width:150px; position:relative; }
+.subpage::before { content:''; position:absolute; top:-9px; left:50%; width:1px; height:9px; background:#CCC; }
+.subpage-title { font-size:11px; font-weight:500; }
+.subpage-desc { font-size:10px; color:#999; margin-top:2px; }
+
+.section-label { font-size:10px; font-weight:600; text-transform:uppercase; letter-spacing:1.2px; color:#BBB; text-align:center; margin:28px 0 12px; }
+
+/* API section */
+.api-section { margin-top:32px; border-top:1px solid #EDEBE6; padding-top:28px; }
+.api-grid { display:grid; grid-template-columns:repeat(auto-fit, minmax(190px, 1fr)); gap:8px; }
+.endpoint { background:#fff; border:1px solid #E2E0DB; border-radius:8px; padding:10px 14px; }
+.endpoint-method { font-size:10px; font-weight:600; color:#0C447C; background:#E6F1FB; display:inline-block; padding:1px 6px; border-radius:4px; margin-bottom:4px; }
+.endpoint-path { font-size:12px; font-weight:500; font-family:'DM Mono', monospace; }
+.endpoint-desc { font-size:11px; color:#888; margin-top:2px; }
+</style>
+</head>
+<body>
+<div class="container">
+  <h1>Dashboard sitemap</h1>
+  <p class="subtitle">All pages, features, and API endpoints</p>
+
+  <div class="sitemap">
+
+    <!-- Root -->
+    <div class="root">
+      <div class="root-title">Login</div>
+      <div class="root-desc">Username + password → session</div>
+    </div>
+    <div class="trunk"></div>
+
+    <div class="section-label">Main navigation (sidebar)</div>
+
+    <!-- Main pages -->
+    <div class="level">
+      <div class="page">
+        <div class="page-title">Dashboard</div>
+        <ul class="page-features">
+          <li>Today's games</li>
+          <li>Pending articles count</li>
+          <li>Recent activity feed</li>
+          <li>Missed calls / no photos</li>
+        </ul>
+      </div>
+      <div class="page">
+        <div class="page-title">Games</div>
+        <ul class="page-features">
+          <li>Filter by school, sport, date</li>
+          <li>Status icons per game</li>
+          <li>Click → game detail</li>
+        </ul>
+      </div>
+      <div class="page">
+        <div class="page-title">Articles</div>
+        <ul class="page-features">
+          <li>Pending review queue</li>
+          <li>Inline edit headline/body</li>
+          <li>Attach/swap photo</li>
+          <li>Approve / reject</li>
+          <li>Source tag (call or text)</li>
+          <li>Thin source flag</li>
+        </ul>
+      </div>
+      <div class="page">
+        <div class="page-title">Contacts</div>
+        <ul class="page-features">
+          <li>All coaches table</li>
+          <li>Preference toggle (call/text)</li>
+          <li>Add / edit / deactivate</li>
+          <li>Send intro text</li>
+          <li>CSV bulk import</li>
+          <li>Missing phone highlight</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="section-label" style="margin-top:20px;"></div>
+
+    <div class="level">
+      <div class="page">
+        <div class="page-title">Schools & Teams</div>
+        <ul class="page-features">
+          <li>4 schools, auto-populated</li>
+          <li>Toggle teams active</li>
+          <li>Per-sport timing config</li>
+          <li>Game duration estimates</li>
+        </ul>
+      </div>
+      <div class="page">
+        <div class="page-title">Activity Log</div>
+        <ul class="page-features">
+          <li>All system events</li>
+          <li>Filter by type, date</li>
+          <li>Texts, calls, articles, errors</li>
+        </ul>
+      </div>
+      <div class="page">
+        <div class="page-title">Settings</div>
+        <ul class="page-features">
+          <li>API keys (encrypted)</li>
+          <li>Default timing offsets</li>
+          <li>Journalism prompt editor</li>
+          <li>SMS templates</li>
+          <li>Notification prefs</li>
+          <li>API token management</li>
+          <li>User management</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- Game detail subpage -->
+    <div class="section-label">Detail views (accessed from list pages)</div>
+    <div class="subpages">
+      <div class="subpage">
+        <div class="subpage-title">Game detail</div>
+        <div class="subpage-desc">Game info, photos, call transcript, generated article, status timeline</div>
+      </div>
+      <div class="subpage">
+        <div class="subpage-title">Article editor</div>
+        <div class="subpage-desc">Full edit view with headline, body, photo picker, approve/reject</div>
+      </div>
+      <div class="subpage">
+        <div class="subpage-title">Contact detail</div>
+        <div class="subpage-desc">Coach info, preference, message history, onboarding status</div>
+      </div>
+    </div>
+
+    <!-- API endpoints -->
+    <div class="api-section">
+      <div class="section-label" style="margin-top:0;">REST API endpoints (bearer token auth)</div>
+      <div class="api-grid">
+        <div class="endpoint">
+          <span class="endpoint-method">GET</span>
+          <div class="endpoint-path">/api/articles</div>
+          <div class="endpoint-desc">List articles by status, school, sport</div>
+        </div>
+        <div class="endpoint">
+          <span class="endpoint-method">GET</span>
+          <div class="endpoint-path">/api/articles/:id</div>
+          <div class="endpoint-desc">Single article + game + photo</div>
+        </div>
+        <div class="endpoint">
+          <span class="endpoint-method">PATCH</span>
+          <div class="endpoint-path">/api/articles/:id</div>
+          <div class="endpoint-desc">Mark as published</div>
+        </div>
+        <div class="endpoint">
+          <span class="endpoint-method">GET</span>
+          <div class="endpoint-path">/api/games</div>
+          <div class="endpoint-desc">List games with filters</div>
+        </div>
+        <div class="endpoint">
+          <span class="endpoint-method">GET</span>
+          <div class="endpoint-path">/api/games/:id</div>
+          <div class="endpoint-desc">Game detail + photos + article</div>
+        </div>
+        <div class="endpoint">
+          <span class="endpoint-method">GET</span>
+          <div class="endpoint-path">/api/photos/:id/file</div>
+          <div class="endpoint-desc">Serve image file</div>
+        </div>
+        <div class="endpoint">
+          <span class="endpoint-method">GET</span>
+          <div class="endpoint-path">/api/schools</div>
+          <div class="endpoint-desc">List schools</div>
+        </div>
+        <div class="endpoint">
+          <span class="endpoint-method">GET</span>
+          <div class="endpoint-path">/api/schedule</div>
+          <div class="endpoint-desc">Upcoming games, all schools</div>
+        </div>
+        <div class="endpoint">
+          <span class="endpoint-method">GET</span>
+          <div class="endpoint-path">/api/health</div>
+          <div class="endpoint-desc">System status + last sync</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+</body>
+</html>

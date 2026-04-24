@@ -1,0 +1,92 @@
+<%- include('../partials/layout-start') %>
+
+<div class="page-header">
+  <div>
+    <h1>Schools &amp; Teams</h1>
+    <div class="subtitle">4 schools, OSAA-synced teams</div>
+  </div>
+  <form method="POST" action="/teams/sync" style="display:inline;">
+    <button type="submit" class="btn btn-secondary">Sync from OSAA</button>
+  </form>
+</div>
+
+<% if (flash) { %>
+  <div class="alert alert-<%= flash.type === 'error' ? 'error' : (flash.type === 'success' ? 'success' : 'info') %>"><%= flash.message %></div>
+<% } %>
+
+<% schools.forEach(s => { %>
+  <div class="card">
+    <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+      <div>
+        <h2><%= s.name %> <span class="tag tag-blue" style="margin-left:6px;"><%= s.classification %></span></h2>
+        <div class="card-subtitle"><%= s.mascot %> · OSAA #<%= s.osaa_id %> · <%= s.active_team_count %>/<%= s.team_count %> active teams</div>
+      </div>
+    </div>
+
+    <% const teams = teamsBySchool[s.id] || []; %>
+    <% if (teams.length === 0) { %>
+      <div class="empty">
+        <strong>No teams yet</strong>
+        Hit "Sync from OSAA" to import teams (or add manually below).
+      </div>
+    <% } else { %>
+      <table class="table">
+        <thead><tr><th>Sport</th><th>Season</th><th>Level</th><th>OSAA team</th><th>Contacts</th><th>Status</th><th></th></tr></thead>
+        <tbody>
+          <% teams.forEach(t => { %>
+            <tr>
+              <td><strong><%= t.sport_name %></strong></td>
+              <td class="muted"><%= t.season %></td>
+              <td><span class="tag tag-gray"><%= t.level %></span></td>
+              <td class="muted"><%= t.osaa_team_id || '—' %></td>
+              <td><%= t.contact_count %></td>
+              <td>
+                <% if (t.is_active) { %><span class="tag tag-green">active</span><% } else { %><span class="tag tag-gray">inactive</span><% } %>
+              </td>
+              <td style="text-align:right;">
+                <% if (t.osaa_team_id) { %>
+                  <form method="POST" action="/teams/<%= t.id %>/scrape-coaches" style="display:inline;">
+                    <button type="submit" class="btn btn-link" style="font-size:12px;">Scrape coaches</button>
+                  </form>
+                <% } %>
+                <form method="POST" action="/teams/<%= t.id %>/toggle" style="display:inline;">
+                  <button type="submit" class="btn btn-link" style="font-size:12px;"><%= t.is_active ? 'Deactivate' : 'Activate' %></button>
+                </form>
+              </td>
+            </tr>
+          <% }) %>
+        </tbody>
+      </table>
+    <% } %>
+  </div>
+<% }) %>
+
+<div class="card">
+  <h2>Add a team manually</h2>
+  <div class="card-subtitle">Use when OSAA sync hasn't picked up a team or for testing</div>
+  <form method="POST" action="/teams">
+    <div class="field-row">
+      <div class="field">
+        <label>School</label>
+        <select name="school_id">
+          <% schools.forEach(s => { %><option value="<%= s.id %>"><%= s.name %></option><% }) %>
+        </select>
+      </div>
+      <div class="field">
+        <label>Sport</label>
+        <select name="sport_id">
+          <% sports.forEach(sp => { %><option value="<%= sp.id %>"><%= sp.name %> (<%= sp.season %>)</option><% }) %>
+        </select>
+      </div>
+      <div class="field" style="max-width:120px;">
+        <label>Level</label>
+        <select name="level">
+          <option value="V">Varsity</option><option value="JV">JV</option><option value="JV2">JV2</option><option value="FR">FR</option><option value="FR2">FR2</option>
+        </select>
+      </div>
+    </div>
+    <div class="btn-row"><button type="submit" class="btn btn-primary">Add team</button></div>
+  </form>
+</div>
+
+<%- include('../partials/layout-end') %>

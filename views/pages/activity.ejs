@@ -1,0 +1,50 @@
+<%- include('../partials/layout-start') %>
+
+<div class="page-header">
+  <div>
+    <h1>Activity Log</h1>
+    <div class="subtitle"><%= events.length %> events (most recent 500)</div>
+  </div>
+</div>
+
+<div class="card">
+  <h2>Filter</h2>
+  <form method="GET" action="/activity">
+    <div class="field-row">
+      <div class="field">
+        <label>Type</label>
+        <select name="type" onchange="this.form.submit()">
+          <option value="">All</option>
+          <% types.forEach(t => { %><option value="<%= t %>" <%= filters.type === t ? 'selected' : '' %>><%= t %></option><% }) %>
+        </select>
+      </div>
+      <div class="field"><label>From</label><input type="date" name="date_from" value="<%= filters.date_from %>" onchange="this.form.submit()"></div>
+      <div class="field"><label>To</label><input type="date" name="date_to" value="<%= filters.date_to %>" onchange="this.form.submit()"></div>
+    </div>
+  </form>
+</div>
+
+<div class="card">
+  <% if (events.length === 0) { %>
+    <div class="empty"><strong>No events</strong>The system is quiet.</div>
+  <% } else { %>
+    <table class="table">
+      <thead><tr><th>When</th><th>Type</th><th>Game</th><th>Message</th></tr></thead>
+      <tbody>
+        <% events.forEach(e => { %>
+          <tr>
+            <td class="muted" style="font-size:12px; white-space:nowrap;"><%= e.created_at %></td>
+            <td>
+              <% const cls = e.type.startsWith('error') ? 'tag-red' : e.type.includes('article') ? 'tag-blue' : e.type.includes('call') ? 'tag-amber' : e.type.includes('sms') ? 'tag-green' : 'tag-gray'; %>
+              <span class="tag <%= cls %>"><%= e.type %></span>
+            </td>
+            <td><% if (e.related_game_id) { %><a href="/games/<%= e.related_game_id %>">#<%= e.related_game_id %></a><% } else { %>—<% } %></td>
+            <td><%= e.message %></td>
+          </tr>
+        <% }) %>
+      </tbody>
+    </table>
+  <% } %>
+</div>
+
+<%- include('../partials/layout-end') %>

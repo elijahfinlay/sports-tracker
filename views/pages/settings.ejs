@@ -1,0 +1,147 @@
+<%- include('../partials/layout-start') %>
+
+<div class="page-header">
+  <div>
+    <h1>Settings</h1>
+    <div class="subtitle">System configuration, credentials, templates</div>
+  </div>
+</div>
+
+<% if (flash) { %>
+  <div class="alert alert-<%= flash.type === 'error' ? 'error' : 'success' %>"><%= flash.message %></div>
+<% } %>
+
+<form method="POST" action="/settings">
+
+  <div class="card">
+    <h2>Outlet</h2>
+    <div class="card-subtitle">Used in coach-facing message templates</div>
+    <div class="field">
+      <label>Outlet name</label>
+      <input type="text" name="outlet_name" value="<%= values.outlet_name %>">
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Default timing</h2>
+    <div class="card-subtitle">When automated texts and calls fire (per-sport overrides below)</div>
+    <div class="field-row">
+      <div class="field">
+        <label>Photo text offset (minutes from game time)</label>
+        <input type="number" name="photo_text_offset_minutes" value="<%= values.photo_text_offset_minutes %>">
+        <div class="help">Negative = before game (e.g. -30 means 30 min before).</div>
+      </div>
+      <div class="field">
+        <label>Call offset (minutes after game ends)</label>
+        <input type="number" name="call_offset_minutes" value="<%= values.call_offset_minutes %>">
+        <div class="help">Time after estimated game end to place the post-game call.</div>
+      </div>
+    </div>
+    <div class="field">
+      <label>Sport game-duration estimates (JSON, minutes by OSAA slug)</label>
+      <textarea name="sport_game_durations" rows="8"><%= values.sport_game_durations %></textarea>
+      <div class="help">Keys are OSAA activity slugs (fbl=Football, bbx=Boys Basketball, etc.).</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Message templates</h2>
+    <div class="card-subtitle">Variables in {curly_braces}: coach_name, outlet_name, school, sport, team, opponent</div>
+
+    <div class="field">
+      <label>Photo request (sent before game)</label>
+      <textarea name="photo_request_template" rows="3"><%= values.photo_request_template %></textarea>
+    </div>
+    <div class="field">
+      <label>Structured text recap request (text-only coaches)</label>
+      <textarea name="text_only_recap_template" rows="6"><%= values.text_only_recap_template %></textarea>
+    </div>
+    <div class="field">
+      <label>Nudge after 2 hours (text-only, no reply)</label>
+      <textarea name="text_only_nudge_template" rows="2"><%= values.text_only_nudge_template %></textarea>
+    </div>
+    <div class="field">
+      <label>Intro text (sent on coach onboarding)</label>
+      <textarea name="intro_text_template" rows="5"><%= values.intro_text_template %></textarea>
+    </div>
+    <div class="field-row">
+      <div class="field">
+        <label>Auto-reply: photo received</label>
+        <textarea name="reply_photo_received" rows="2"><%= values.reply_photo_received %></textarea>
+      </div>
+      <div class="field">
+        <label>Auto-reply: text received</label>
+        <textarea name="reply_text_received" rows="2"><%= values.reply_text_received %></textarea>
+      </div>
+      <div class="field">
+        <label>Auto-reply: both received</label>
+        <textarea name="reply_both_received" rows="2"><%= values.reply_both_received %></textarea>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Journalism prompt</h2>
+    <div class="card-subtitle">Sent to Claude with each transcript or text. Paste the full prompt here.</div>
+    <div class="field">
+      <textarea name="journalism_prompt" rows="14"><%= values.journalism_prompt %></textarea>
+    </div>
+  </div>
+
+  <div class="btn-row">
+    <button type="submit" class="btn btn-primary">Save settings</button>
+  </div>
+</form>
+
+<div class="section-divider"></div>
+
+<form method="POST" action="/settings/secrets">
+  <div class="card">
+    <h2>API credentials</h2>
+    <div class="card-subtitle">Stored encrypted at rest. Leave blank to keep current value. Type <code>__clear__</code> to remove.</div>
+    <% const secretLabels = {
+      twilio_account_sid: 'Twilio Account SID',
+      twilio_auth_token: 'Twilio Auth Token',
+      twilio_phone_number: 'Twilio Phone Number',
+      retell_api_key: 'Retell API Key',
+      retell_agent_id: 'Retell Agent ID',
+      anthropic_api_key: 'Anthropic API Key',
+    }; %>
+    <% Object.entries(secretLabels).forEach(([key, label]) => { %>
+      <div class="field">
+        <label>
+          <%= label %>
+          <% if (secretStatus[key]) { %>
+            <span class="tag tag-green" style="margin-left:6px;">configured</span>
+          <% } else { %>
+            <span class="tag tag-gray" style="margin-left:6px;">not set</span>
+          <% } %>
+        </label>
+        <input type="password" name="<%= key %>" autocomplete="off" placeholder="<%= secretStatus[key] ? '•••••••••••• (leave blank to keep)' : 'paste value' %>">
+      </div>
+    <% }) %>
+    <div class="btn-row">
+      <button type="submit" class="btn btn-primary">Update credentials</button>
+    </div>
+  </div>
+</form>
+
+<div class="section-divider"></div>
+
+<div class="card">
+  <h2>API tokens</h2>
+  <div class="card-subtitle">Bearer tokens for the news site and other consumers</div>
+  <div class="btn-row">
+    <a href="/settings/tokens" class="btn btn-secondary">Manage API tokens</a>
+  </div>
+</div>
+
+<div class="card">
+  <h2>User management</h2>
+  <div class="card-subtitle"><%= userCount %> active dashboard user<%= userCount === 1 ? '' : 's' %></div>
+  <div class="btn-row">
+    <a href="/users" class="btn btn-secondary">Manage users</a>
+  </div>
+</div>
+
+<%- include('../partials/layout-end') %>

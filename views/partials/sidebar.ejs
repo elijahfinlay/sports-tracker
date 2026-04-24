@@ -1,0 +1,24 @@
+<aside class="sidebar">
+  <div class="brand">
+    Roseburg Sports
+    <span class="brand-sub">Automation</span>
+  </div>
+  <nav class="nav">
+    <a href="/" class="<%= currentPath === '/' ? 'active' : '' %>">Dashboard</a>
+    <a href="/games" class="<%= currentPath.startsWith('/games') ? 'active' : '' %>">Games</a>
+    <a href="/articles" class="<%= currentPath.startsWith('/articles') ? 'active' : '' %>">Articles</a>
+    <a href="/contacts" class="<%= currentPath.startsWith('/contacts') ? 'active' : '' %>">Contacts</a>
+    <a href="/teams" class="<%= currentPath.startsWith('/teams') || currentPath.startsWith('/schools') ? 'active' : '' %>">Schools &amp; Teams</a>
+    <a href="/activity" class="<%= currentPath.startsWith('/activity') ? 'active' : '' %>">Activity Log</a>
+    <a href="/settings" class="<%= currentPath.startsWith('/settings') || currentPath.startsWith('/users') ? 'active' : '' %>">Settings</a>
+  </nav>
+  <% if (user) { %>
+    <div class="user-block">
+      <strong><%= user.username %></strong>
+      <%= user.role %>
+      <form action="/logout" method="POST" style="margin-top:6px;">
+        <button type="submit">Sign out</button>
+      </form>
+    </div>
+  <% } %>
+</aside>

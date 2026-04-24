@@ -1,0 +1,113 @@
+<%- include('../partials/layout-start') %>
+
+<div class="page-header">
+  <div>
+    <h1><%= game.school_name %> <%= game.sport_name %> <span class="muted">vs <%= game.opponent || '—' %></span></h1>
+    <div class="subtitle"><%= game.game_date %> <%= game.game_time || '' %> · <%= game.location || 'TBD' %></div>
+  </div>
+  <a href="/games" class="btn btn-secondary">All games</a>
+</div>
+
+<% if (flash) { %>
+  <div class="alert alert-<%= flash.type === 'error' ? 'error' : 'success' %>"><%= flash.message %></div>
+<% } %>
+
+<div class="card">
+  <h2>Status</h2>
+  <div style="display:flex; gap:24px; flex-wrap:wrap;">
+    <div><strong>Status:</strong> <span class="tag tag-blue"><%= game.status %></span></div>
+    <div><strong>Result:</strong> <%= game.result || '—' %></div>
+    <div><strong>Photo requested:</strong> <%= game.photo_requested ? 'yes (' + (game.photo_request_sent_at || '') + ')' : 'no' %></div>
+    <div><strong>Call:</strong> <%= game.call_requested ? (game.call_completed ? 'completed' : 'queued') : 'no' %> (retries: <%= game.call_retry_count %>)</div>
+  </div>
+  <div class="btn-row" style="margin-top:16px;">
+    <form method="POST" action="/games/<%= game.id %>/sync" style="display:inline;"><button class="btn btn-secondary">Sync from OSAA</button></form>
+    <form method="POST" action="/games/<%= game.id %>/send-photo-request" style="display:inline;"><button class="btn btn-secondary">Send photo request now</button></form>
+    <form method="POST" action="/games/<%= game.id %>/trigger-call" style="display:inline;"><button class="btn btn-secondary">Trigger call now</button></form>
+    <form method="POST" action="/games/<%= game.id %>/generate-article" style="display:inline;"><button class="btn btn-secondary">Generate article</button></form>
+  </div>
+</div>
+
+<% if (contact) { %>
+  <div class="card">
+    <h2>Primary contact</h2>
+    <div><strong><%= contact.name %></strong> · <%= contact.role || 'coach' %> · <%= contact.phone || 'no phone' %> · pref: <%= contact.preference %></div>
+  </div>
+<% } %>
+
+<div class="card">
+  <h2>Photos (<%= photos.length %>)</h2>
+  <% if (photos.length === 0) { %>
+    <div class="empty">No photos yet.</div>
+  <% } else { %>
+    <div style="display:flex; gap:12px; flex-wrap:wrap;">
+      <% photos.forEach(p => { %>
+        <a href="/photos/<%= p.id %>/file" target="_blank" style="display:block;">
+          <img src="/photos/<%= p.id %>/file" style="max-width:200px; max-height:160px; border-radius:8px; border:1px solid var(--border);">
+        </a>
+      <% }) %>
+    </div>
+  <% } %>
+</div>
+
+<div class="card">
+  <h2>Game texts (<%= texts.length %>)</h2>
+  <% if (texts.length === 0) { %>
+    <div class="empty">No texts received.</div>
+  <% } else { %>
+    <% texts.forEach(t => { %>
+      <div style="border-left:3px solid var(--accent); padding:8px 12px; margin-bottom:8px; background:var(--bg);">
+        <div class="muted" style="font-size:12px;"><%= t.contact_name %> · <%= t.received_at %></div>
+        <div style="margin-top:4px; white-space:pre-wrap;"><%= t.message_body %></div>
+      </div>
+    <% }) %>
+  <% } %>
+</div>
+
+<div class="card">
+  <h2>Calls (<%= calls.length %>)</h2>
+  <% if (calls.length === 0) { %>
+    <div class="empty">No calls placed.</div>
+  <% } else { %>
+    <% calls.forEach(c => { %>
+      <div style="margin-bottom:16px;">
+        <div><strong><%= c.contact_name || 'Unknown' %></strong> · <span class="tag tag-gray"><%= c.status %></span> · <%= c.duration_seconds || 0 %>s · <%= c.created_at %></div>
+        <% if (c.transcript) { %>
+          <details style="margin-top:8px;"><summary style="cursor:pointer; font-size:12px; color:var(--text-muted);">Transcript</summary>
+            <pre style="background:var(--bg); padding:12px; border-radius:6px; white-space:pre-wrap; font-size:12px; margin-top:6px;"><%= c.transcript %></pre>
+          </details>
+        <% } %>
+      </div>
+    <% }) %>
+  <% } %>
+</div>
+
+<div class="card">
+  <h2>Articles (<%= articles.length %>)</h2>
+  <% if (articles.length === 0) { %>
+    <div class="empty">No article generated yet.</div>
+  <% } else { %>
+    <% articles.forEach(a => { %>
+      <div style="margin-bottom:12px;">
+        <div><a href="/articles/<%= a.id %>"><strong><%= a.headline %></strong></a> <span class="tag tag-gray"><%= a.status %></span> <span class="tag tag-blue"><%= a.source %></span><% if (a.thin_source) { %> <span class="tag tag-amber">thin source</span><% } %></div>
+        <div class="muted" style="font-size:12px;">Created <%= a.created_at %></div>
+      </div>
+    <% }) %>
+  <% } %>
+</div>
+
+<div class="card">
+  <h2>Activity</h2>
+  <% if (events.length === 0) { %><div class="empty">No events.</div><% } else { %>
+    <table class="table">
+      <thead><tr><th>When</th><th>Type</th><th>Message</th></tr></thead>
+      <tbody>
+        <% events.forEach(e => { %>
+          <tr><td class="muted"><%= e.created_at %></td><td><span class="tag tag-gray"><%= e.type %></span></td><td><%= e.message %></td></tr>
+        <% }) %>
+      </tbody>
+    </table>
+  <% } %>
+</div>
+
+<%- include('../partials/layout-end') %>

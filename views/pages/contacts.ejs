@@ -1,0 +1,138 @@
+<%- include('../partials/layout-start') %>
+
+<div class="page-header">
+  <div>
+    <h1>Contacts</h1>
+    <div class="subtitle"><%= contacts.length %> coaches</div>
+  </div>
+</div>
+
+<% if (flash) { %>
+  <div class="alert alert-<%= flash.type === 'error' ? 'error' : 'success' %>"><%= flash.message %></div>
+<% } %>
+
+<div class="card">
+  <h2>Filter</h2>
+  <form method="GET" action="/contacts">
+    <div class="field-row">
+      <div class="field">
+        <label>School</label>
+        <select name="school_id" onchange="this.form.submit()">
+          <option value="">All schools</option>
+          <% schools.forEach(s => { %><option value="<%= s.id %>" <%= filters.school_id === s.id ? 'selected' : '' %>><%= s.name %></option><% }) %>
+        </select>
+      </div>
+      <div class="field">
+        <label>Team</label>
+        <select name="team_id" onchange="this.form.submit()">
+          <option value="">All teams</option>
+          <% teams.forEach(t => { %><option value="<%= t.id %>" <%= filters.team_id === t.id ? 'selected' : '' %>><%= t.school_name %> · <%= t.sport_name %> <%= t.level %></option><% }) %>
+        </select>
+      </div>
+      <div class="field" style="max-width:160px;">
+        <label>Show inactive</label>
+        <select name="show_inactive" onchange="this.form.submit()">
+          <option value="0">Hide</option>
+          <option value="1" <%= filters.show_inactive ? 'selected' : '' %>>Show</option>
+        </select>
+      </div>
+    </div>
+  </form>
+</div>
+
+<div class="card">
+  <h2>Coaches</h2>
+  <% if (contacts.length === 0) { %>
+    <div class="empty"><strong>No contacts yet</strong>Use OSAA "Scrape coaches" on the Teams page, or add below.</div>
+  <% } else { %>
+    <table class="table">
+      <thead><tr><th>Name</th><th>School / Team</th><th>Role</th><th>Phone</th><th>Preference</th><th>Status</th><th></th></tr></thead>
+      <tbody>
+        <% contacts.forEach(c => { %>
+          <tr>
+            <td>
+              <strong><%= c.name %></strong>
+              <% if (c.is_primary) { %><span class="tag tag-blue" style="margin-left:6px;">primary</span><% } %>
+            </td>
+            <td class="muted"><%= c.school_name %> · <%= c.sport_name %> <%= c.level %></td>
+            <td class="muted"><%= c.role || '—' %></td>
+            <td>
+              <% if (!c.phone) { %>
+                <span class="tag tag-amber">missing</span>
+              <% } else { %>
+                <%= c.phone %>
+              <% } %>
+            </td>
+            <td>
+              <form method="POST" action="/contacts/<%= c.id %>/preference" style="display:inline;">
+                <select name="preference" onchange="this.form.submit()" style="padding:4px 8px; font-size:12px; border:1px solid var(--border-strong); border-radius:4px;">
+                  <option value="call" <%= c.preference === 'call' ? 'selected' : '' %>>Call</option>
+                  <option value="text_only" <%= c.preference === 'text_only' ? 'selected' : '' %>>Text only</option>
+                </select>
+              </form>
+            </td>
+            <td>
+              <% if (c.is_active) { %><span class="tag tag-green">active</span><% } else { %><span class="tag tag-gray">inactive</span><% } %>
+              <% if (c.onboarded_at) { %><br><span class="tag tag-gray" style="margin-top:2px;">onboarded</span><% } %>
+            </td>
+            <td style="text-align:right; white-space:nowrap;">
+              <% if (c.phone && !c.onboarded_at) { %>
+                <form method="POST" action="/contacts/<%= c.id %>/intro" style="display:inline;" onsubmit="return confirm('Send intro text to <%= c.name %>?');">
+                  <button type="submit" class="btn btn-link" style="font-size:12px;">Send intro</button>
+                </form>
+              <% } %>
+              <form method="POST" action="/contacts/<%= c.id %>/toggle" style="display:inline;">
+                <button type="submit" class="btn btn-link" style="font-size:12px; color: <%= c.is_active ? 'var(--danger)' : 'var(--accent-text)' %>;">
+                  <%= c.is_active ? 'Deactivate' : 'Reactivate' %>
+                </button>
+              </form>
+            </td>
+          </tr>
+        <% }) %>
+      </tbody>
+    </table>
+  <% } %>
+</div>
+
+<div class="card">
+  <h2>Add a contact</h2>
+  <form method="POST" action="/contacts">
+    <div class="field-row">
+      <div class="field">
+        <label>Team</label>
+        <select name="team_id" required>
+          <option value="">Select team…</option>
+          <% teams.forEach(t => { %><option value="<%= t.id %>"><%= t.school_name %> · <%= t.sport_name %> <%= t.level %></option><% }) %>
+        </select>
+      </div>
+      <div class="field"><label>Name</label><input type="text" name="name" required></div>
+      <div class="field"><label>Role</label><input type="text" name="role" placeholder="Head Coach"></div>
+    </div>
+    <div class="field-row">
+      <div class="field"><label>Phone</label><input type="text" name="phone" placeholder="(541) 555-0100"></div>
+      <div class="field"><label>Email (optional)</label><input type="email" name="email"></div>
+      <div class="field" style="max-width:160px;">
+        <label>Preference</label>
+        <select name="preference"><option value="call">Call</option><option value="text_only">Text only</option></select>
+      </div>
+      <div class="field" style="max-width:120px;">
+        <label>Primary?</label>
+        <select name="is_primary"><option value="1">Yes</option><option value="0">No</option></select>
+      </div>
+    </div>
+    <div class="btn-row"><button type="submit" class="btn btn-primary">Add contact</button></div>
+  </form>
+</div>
+
+<div class="card">
+  <h2>Bulk import</h2>
+  <div class="card-subtitle">Paste CSV: <code>school,sport,level,name,role,phone,email,preference</code> (one per line, # for comments)</div>
+  <form method="POST" action="/contacts/import">
+    <div class="field">
+      <textarea name="csv" rows="6" placeholder="# Roseburg,Football,V,Jane Doe,Head Coach,(541) 555-0100,jane@school.org,call"></textarea>
+    </div>
+    <div class="btn-row"><button type="submit" class="btn btn-primary">Import</button></div>
+  </form>
+</div>
+
+<%- include('../partials/layout-end') %>

@@ -1,0 +1,17 @@
+<% if (user) { %>
+  <%- include('../partials/layout-start') %>
+<% } else { %>
+  <!DOCTYPE html><html lang="en"><head><%- include('../partials/head') %></head><body><main class="main">
+<% } %>
+
+<div class="page-header"><div><h1><%= title %></h1></div></div>
+<div class="card">
+  <p style="margin:0;"><%= message %></p>
+  <div class="btn-row"><a href="/" class="btn btn-secondary">Home</a></div>
+</div>
+
+<% if (user) { %>
+  <%- include('../partials/layout-end') %>
+<% } else { %>
+  </main></body></html>
+<% } %>

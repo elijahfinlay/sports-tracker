@@ -1,0 +1,78 @@
+<%- include('../partials/layout-start') %>
+
+<div class="page-header">
+  <div>
+    <h1>Article editor</h1>
+    <div class="subtitle"><%= article.school_name %> · <%= article.sport_name %> vs <%= article.opponent || '—' %> · <%= article.game_date %></div>
+  </div>
+  <div>
+    <a href="/games/<%= article.game_id %>" class="btn btn-secondary">View game</a>
+    <a href="/articles" class="btn btn-secondary">All articles</a>
+  </div>
+</div>
+
+<% if (flash) { %>
+  <div class="alert alert-<%= flash.type === 'error' ? 'error' : 'success' %>"><%= flash.message %></div>
+<% } %>
+
+<div style="display:flex; gap:8px; margin-bottom:16px;">
+  <span class="tag <%= article.status === 'pending_review' ? 'tag-amber' : article.status === 'approved' ? 'tag-green' : article.status === 'rejected' ? 'tag-red' : 'tag-gray' %>"><%= article.status %></span>
+  <span class="tag tag-blue"><%= article.source %></span>
+  <% if (article.thin_source) { %><span class="tag tag-amber">thin source — may need editing</span><% } %>
+</div>
+
+<form method="POST" action="/articles/<%= article.id %>">
+  <div class="card">
+    <h2>Edit</h2>
+    <div class="field"><label>Headline</label><input type="text" name="headline" value="<%= article.headline %>" required></div>
+    <div class="field">
+      <label>Body</label>
+      <textarea name="body" rows="20" style="font-family: 'DM Sans', sans-serif;"><%= article.body %></textarea>
+    </div>
+
+    <div class="field">
+      <label>Attach photo</label>
+      <% if (photos.length === 0) { %>
+        <div class="muted" style="font-size:12px;">No photos for this game yet.</div>
+      <% } else { %>
+        <div style="display:flex; gap:10px; flex-wrap:wrap; margin-top:6px;">
+          <label style="cursor:pointer; border:2px solid <%= !article.photo_id ? 'var(--accent)' : 'var(--border)' %>; border-radius:8px; padding:8px; display:flex; align-items:center; justify-content:center; width:120px; height:90px; background:var(--bg);">
+            <input type="radio" name="photo_id" value="" <%= !article.photo_id ? 'checked' : '' %> style="display:none;">
+            <span class="muted" style="font-size:11px;">No photo</span>
+          </label>
+          <% photos.forEach(p => { %>
+            <label style="cursor:pointer; border:2px solid <%= article.photo_id === p.id ? 'var(--accent)' : 'var(--border)' %>; border-radius:8px; padding:0; overflow:hidden; width:120px; height:90px;">
+              <input type="radio" name="photo_id" value="<%= p.id %>" <%= article.photo_id === p.id ? 'checked' : '' %> style="display:none;">
+              <img src="/photos/<%= p.id %>/file" style="width:100%; height:100%; object-fit:cover;">
+            </label>
+          <% }) %>
+        </div>
+      <% } %>
+    </div>
+
+    <div class="btn-row">
+      <button type="submit" class="btn btn-primary">Save changes</button>
+    </div>
+  </div>
+</form>
+
+<div class="card">
+  <h2>Decision</h2>
+  <div class="btn-row">
+    <% if (article.status !== 'approved') { %>
+      <form method="POST" action="/articles/<%= article.id %>/approve" style="display:inline;">
+        <button class="btn btn-primary">Approve</button>
+      </form>
+    <% } %>
+    <% if (article.status !== 'rejected') { %>
+      <form method="POST" action="/articles/<%= article.id %>/reject" style="display:inline;" onsubmit="return confirm('Reject this article?');">
+        <button class="btn btn-danger">Reject</button>
+      </form>
+    <% } %>
+    <form method="POST" action="/articles/<%= article.id %>/regenerate" style="display:inline;" onsubmit="return confirm('Regenerate from source?');">
+      <button class="btn btn-secondary">Regenerate</button>
+    </form>
+  </div>
+</div>
+
+<%- include('../partials/layout-end') %>

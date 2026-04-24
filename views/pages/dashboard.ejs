@@ -1,0 +1,83 @@
+<%- include('../partials/layout-start') %>
+
+<div class="page-header">
+  <div>
+    <h1>Dashboard</h1>
+    <div class="subtitle">At-a-glance summary</div>
+  </div>
+</div>
+
+<div class="stats">
+  <div class="stat">
+    <div class="stat-label">Today's games</div>
+    <div class="stat-value"><%= stats.todayGames %></div>
+    <div class="stat-sub">across <%= stats.activeSchools %> schools</div>
+  </div>
+  <div class="stat">
+    <div class="stat-label">Pending review</div>
+    <div class="stat-value"><%= stats.pendingArticles %></div>
+    <div class="stat-sub">articles waiting</div>
+  </div>
+  <div class="stat">
+    <div class="stat-label">Recent photos</div>
+    <div class="stat-value"><%= stats.recentPhotos %></div>
+    <div class="stat-sub">last 24 hours</div>
+  </div>
+  <div class="stat">
+    <div class="stat-label">Active contacts</div>
+    <div class="stat-value"><%= stats.activeContacts %></div>
+    <div class="stat-sub">coaches in system</div>
+  </div>
+</div>
+
+<div class="card">
+  <h2>Today's games</h2>
+  <div class="card-subtitle">Upcoming and in-progress for today</div>
+  <% if (todayGames.length === 0) { %>
+    <div class="empty">
+      <strong>No games today</strong>
+      Schedule sync will populate this once Phase 3 is online.
+    </div>
+  <% } else { %>
+    <table class="table">
+      <thead><tr><th>Time</th><th>School</th><th>Sport</th><th>Opponent</th><th>Status</th></tr></thead>
+      <tbody>
+        <% todayGames.forEach(g => { %>
+          <tr>
+            <td><%= g.game_time || '—' %></td>
+            <td><%= g.school_name %></td>
+            <td><%= g.sport_name %></td>
+            <td><%= g.opponent || '—' %></td>
+            <td><span class="tag tag-blue"><%= g.status %></span></td>
+          </tr>
+        <% }) %>
+      </tbody>
+    </table>
+  <% } %>
+</div>
+
+<div class="card">
+  <h2>Recent activity</h2>
+  <div class="card-subtitle">System events from the last 24 hours</div>
+  <% if (recentActivity.length === 0) { %>
+    <div class="empty">
+      <strong>No activity yet</strong>
+      Texts, calls, articles and errors will appear here as the system runs.
+    </div>
+  <% } else { %>
+    <table class="table">
+      <thead><tr><th>When</th><th>Type</th><th>Message</th></tr></thead>
+      <tbody>
+        <% recentActivity.forEach(e => { %>
+          <tr>
+            <td class="muted"><%= e.created_at %></td>
+            <td><span class="tag tag-gray"><%= e.type %></span></td>
+            <td><%= e.message %></td>
+          </tr>
+        <% }) %>
+      </tbody>
+    </table>
+  <% } %>
+</div>
+
+<%- include('../partials/layout-end') %>

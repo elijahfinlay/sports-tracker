@@ -1,0 +1,62 @@
+<%- include('../partials/layout-start') %>
+
+<div class="page-header">
+  <div>
+    <h1>Articles</h1>
+    <div class="subtitle">Review queue, edit, approve</div>
+  </div>
+</div>
+
+<% if (flash) { %>
+  <div class="alert alert-<%= flash.type === 'error' ? 'error' : 'success' %>"><%= flash.message %></div>
+<% } %>
+
+<div class="stats">
+  <div class="stat"><div class="stat-label">Pending</div><div class="stat-value"><%= counts.pending_review || 0 %></div></div>
+  <div class="stat"><div class="stat-label">Approved</div><div class="stat-value"><%= counts.approved || 0 %></div></div>
+  <div class="stat"><div class="stat-label">Published</div><div class="stat-value"><%= counts.published || 0 %></div></div>
+  <div class="stat"><div class="stat-label">Rejected</div><div class="stat-value"><%= counts.rejected || 0 %></div></div>
+</div>
+
+<div class="card">
+  <h2>Filter</h2>
+  <form method="GET" action="/articles">
+    <div class="field" style="max-width:240px;">
+      <label>Status</label>
+      <select name="status" onchange="this.form.submit()">
+        <option value="">All</option>
+        <% ['pending_review','approved','published','rejected','draft'].forEach(s => { %>
+          <option value="<%= s %>" <%= status === s ? 'selected' : '' %>><%= s %></option>
+        <% }) %>
+      </select>
+    </div>
+  </form>
+</div>
+
+<div class="card">
+  <h2>Queue</h2>
+  <% if (articles.length === 0) { %>
+    <div class="empty"><strong>No articles</strong>Articles appear here when calls finish or coach texts come in.</div>
+  <% } else { %>
+    <table class="table">
+      <thead><tr><th>Headline</th><th>Game</th><th>Source</th><th>Status</th><th>Photo</th><th>Created</th></tr></thead>
+      <tbody>
+        <% articles.forEach(a => { %>
+          <tr>
+            <td><a href="/articles/<%= a.id %>"><strong><%= a.headline %></strong></a><% if (a.thin_source) { %> <span class="tag tag-amber">thin</span><% } %></td>
+            <td class="muted"><%= a.school_name %> · <%= a.sport_name %> vs <%= a.opponent || '—' %><br><span style="font-size:11px;"><%= a.game_date %><% if (a.result) { %> · <%= a.result %><% } %></span></td>
+            <td><span class="tag tag-blue"><%= a.source %></span></td>
+            <td>
+              <% const cls = { pending_review:'tag-amber', approved:'tag-green', published:'tag-gray', rejected:'tag-red', draft:'tag-gray' }[a.status] || 'tag-gray'; %>
+              <span class="tag <%= cls %>"><%= a.status %></span>
+            </td>
+            <td><%= a.photo_id ? 'attached' : (a.photo_count > 0 ? a.photo_count + ' available' : '—') %></td>
+            <td class="muted" style="font-size:12px;"><%= a.created_at %></td>
+          </tr>
+        <% }) %>
+      </tbody>
+    </table>
+  <% } %>
+</div>
+
+<%- include('../partials/layout-end') %>

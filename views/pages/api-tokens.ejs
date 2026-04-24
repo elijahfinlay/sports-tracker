@@ -1,0 +1,60 @@
+<%- include('../partials/layout-start') %>
+
+<div class="page-header">
+  <div>
+    <h1>API tokens</h1>
+    <div class="subtitle">Bearer tokens for the news site and other consumers</div>
+  </div>
+  <a href="/settings" class="btn btn-secondary">Back to Settings</a>
+</div>
+
+<% if (flash) { %>
+  <div class="alert alert-<%= flash.type === 'error' ? 'error' : 'success' %>"><%= flash.message %></div>
+<% } %>
+
+<% if (newToken) { %>
+  <div class="alert alert-info">
+    <strong>New token created — copy it now. You won't see it again.</strong><br>
+    <code style="display:block; padding:10px; margin-top:8px; background:#fff; border:1px solid var(--border); border-radius:6px; word-break:break-all; font-family: 'DM Mono', monospace;"><%= newToken %></code>
+  </div>
+<% } %>
+
+<div class="card">
+  <h2>Create token</h2>
+  <form method="POST" action="/settings/tokens">
+    <div class="field-row">
+      <div class="field"><label>Name (e.g. "News site")</label><input type="text" name="name" required></div>
+    </div>
+    <div class="btn-row"><button class="btn btn-primary">Create</button></div>
+  </form>
+</div>
+
+<div class="card">
+  <h2>Existing tokens</h2>
+  <% if (tokens.length === 0) { %>
+    <div class="empty">No tokens yet.</div>
+  <% } else { %>
+    <table class="table">
+      <thead><tr><th>Name</th><th>Status</th><th>Last used</th><th>Created</th><th></th></tr></thead>
+      <tbody>
+        <% tokens.forEach(t => { %>
+          <tr>
+            <td><strong><%= t.name %></strong></td>
+            <td><% if (t.is_active) { %><span class="tag tag-green">active</span><% } else { %><span class="tag tag-gray">revoked</span><% } %></td>
+            <td class="muted"><%= t.last_used_at || 'never' %></td>
+            <td class="muted"><%= t.created_at %></td>
+            <td style="text-align:right;">
+              <% if (t.is_active) { %>
+                <form method="POST" action="/settings/tokens/<%= t.id %>/revoke" style="display:inline;" onsubmit="return confirm('Revoke "<%= t.name %>"?');">
+                  <button class="btn btn-link" style="font-size:12px; color:var(--danger);">Revoke</button>
+                </form>
+              <% } %>
+            </td>
+          </tr>
+        <% }) %>
+      </tbody>
+    </table>
+  <% } %>
+</div>
+
+<%- include('../partials/layout-end') %>

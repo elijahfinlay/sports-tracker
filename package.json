@@ -1,0 +1,27 @@
+{
+  "name": "roseburg-sports-automation",
+  "version": "0.1.0",
+  "description": "Local high school sports automation — schedule sync, photo SMS, AI voice interviews, article generation, REST API",
+  "main": "src/server.js",
+  "type": "commonjs",
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "node --watch src/server.js",
+    "migrate": "node src/db/migrate.js",
+    "create-admin": "node scripts/create-admin.js"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.27.3",
+    "bcryptjs": "^2.4.3",
+    "better-sqlite3": "^12.4.1",
+    "cheerio": "^1.0.0",
+    "connect-sqlite3": "^0.9.15",
+    "dotenv": "^16.4.5",
+    "ejs": "^3.1.10",
+    "express": "^4.21.1",
+    "express-session": "^1.18.1",
+    "multer": "^1.4.5-lts.1",
+    "node-cron": "^3.0.3",
+    "twilio": "^5.3.5"
+  }
+}

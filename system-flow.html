@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Roseburg Sports Automation — System Flow</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+body { font-family:'DM Sans',sans-serif; background:#FAFAFA; color:#1A1A1A; padding:40px 20px; }
+.container { max-width:720px; margin:0 auto; }
+h1 { font-size:20px; font-weight:600; margin-bottom:4px; }
+.subtitle { font-size:13px; color:#888; margin-bottom:32px; }
+
+.phase { margin-bottom:28px; }
+.phase-label { font-size:11px; font-weight:600; text-transform:uppercase; letter-spacing:1.2px; color:#999; margin-bottom:10px; }
+
+.node { border:1px solid #E2E0DB; border-radius:10px; padding:14px 18px; background:#fff; margin-bottom:8px; }
+.node-title { font-size:14px; font-weight:500; }
+.node-desc { font-size:12px; color:#777; margin-top:2px; }
+.node-tag { display:inline-block; font-size:10px; font-weight:500; padding:2px 8px; border-radius:20px; margin-top:6px; }
+
+.tag-blue { background:#E6F1FB; color:#0C447C; }
+.tag-teal { background:#E1F5EE; color:#085041; }
+.tag-coral { background:#FAECE7; color:#712B13; }
+.tag-purple { background:#EEEDFE; color:#3C3489; }
+.tag-amber { background:#FAEEDA; color:#633806; }
+.tag-gray { background:#F1EFE8; color:#444441; }
+
+.connector { display:flex; justify-content:center; padding:4px 0; }
+.arrow { width:1px; height:20px; background:#CCC; position:relative; }
+.arrow::after { content:''; position:absolute; bottom:-1px; left:-4px; border-left:5px solid transparent; border-right:5px solid transparent; border-top:6px solid #CCC; }
+
+.branch { display:flex; gap:8px; margin-bottom:8px; }
+.branch .node { flex:1; }
+
+.split-label { font-size:11px; color:#999; text-align:center; margin-bottom:6px; }
+
+.merge-line { border-top:1px dashed #D0D0D0; margin:12px 40px; }
+
+.section-divider { border-top:1px solid #EDEBE6; margin:32px 0; }
+</style>
+</head>
+<body>
+<div class="container">
+  <h1>System flow</h1>
+  <p class="subtitle">End-to-end pipeline from schedule sync to published article</p>
+
+  <!-- Phase 1: Data -->
+  <div class="phase">
+    <div class="phase-label">1 — Schedule sync</div>
+    <div class="node">
+      <div class="node-title">OSAA API poll</div>
+      <div class="node-desc">Twice daily — pulls games, teams, coach names for all 4 schools</div>
+      <span class="node-tag tag-blue">Cron job</span>
+    </div>
+    <div class="connector"><div class="arrow"></div></div>
+    <div class="node">
+      <div class="node-title">Games database</div>
+      <div class="node-desc">Upserts games, maps OSAA statuses, stores scores when reported</div>
+      <span class="node-tag tag-gray">SQLite</span>
+    </div>
+  </div>
+
+  <!-- Phase 2: Game day trigger -->
+  <div class="phase">
+    <div class="phase-label">2 — Game day triggers</div>
+    <div class="node" style="border-color:#EF9F27; border-width:1.5px;">
+      <div class="node-title">Game detected today</div>
+      <div class="node-desc">Schedule engine fires two timed actions per game</div>
+      <span class="node-tag tag-amber">Automatic</span>
+    </div>
+    <div class="connector"><div class="arrow"></div></div>
+    <div class="branch">
+      <div class="node">
+        <div class="node-title">Photo request SMS</div>
+        <div class="node-desc">30 min before game — asks coach for photo + invites text-in game info</div>
+        <span class="node-tag tag-teal">Twilio</span>
+      </div>
+      <div class="node">
+        <div class="node-title">Post-game contact</div>
+        <div class="node-desc">After game ends — checks coach preference (call vs text-only)</div>
+        <span class="node-tag tag-purple">Timed</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Phase 3: Coach communication -->
+  <div class="phase">
+    <div class="phase-label">3 — Coach communication</div>
+    <div class="split-label">Post-game path depends on coach preference</div>
+    <div class="branch">
+      <div class="node">
+        <div class="node-title">Voice call (default)</div>
+        <div class="node-desc">Retell AI calls coach — 7-question interview, 3-5 min. Retry once if no answer. Rich transcript.</div>
+        <span class="node-tag tag-coral">Retell AI</span>
+      </div>
+      <div class="node">
+        <div class="node-title">Structured text (opt-in)</div>
+        <div class="node-desc">SMS with 4 specific questions (score, standouts, season, upcoming). Nudge after 2hr if no reply.</div>
+        <span class="node-tag tag-teal">Twilio</span>
+      </div>
+    </div>
+    <div class="merge-line"></div>
+    <div class="node">
+      <div class="node-title">Incoming message handler</div>
+      <div class="node-desc">Twilio webhook — receives photos (MMS), game info text (SMS), or both. Matches sender → contact → team → today's game.</div>
+      <span class="node-tag tag-teal">Webhook</span>
+    </div>
+  </div>
+
+  <!-- Phase 4: Article gen -->
+  <div class="phase">
+    <div class="phase-label">4 — Article generation</div>
+    <div class="node">
+      <div class="node-title">Claude API — write article</div>
+      <div class="node-desc">Transcript or text message + game context + journalism prompt → headline + body. Scales length to source quality. Flags thin sources.</div>
+      <span class="node-tag tag-purple">Anthropic API</span>
+    </div>
+    <div class="connector"><div class="arrow"></div></div>
+    <div class="node" style="border-color:#EF9F27; border-width:1.5px;">
+      <div class="node-title">Operator review</div>
+      <div class="node-desc">Dashboard notification — edit headline/body inline, attach photo, approve or reject</div>
+      <span class="node-tag tag-amber">Human in the loop</span>
+    </div>
+  </div>
+
+  <!-- Phase 5: Output -->
+  <div class="phase">
+    <div class="phase-label">5 — Output</div>
+    <div class="node">
+      <div class="node-title">REST API</div>
+      <div class="node-desc">Approved articles, photos, game data — all available via bearer-token-authenticated JSON endpoints</div>
+      <span class="node-tag tag-blue">API</span>
+    </div>
+    <div class="connector"><div class="arrow"></div></div>
+    <div class="branch">
+      <div class="node">
+        <div class="node-title">News site</div>
+        <div class="node-desc">Pulls approved articles + photos</div>
+        <span class="node-tag tag-gray">Consumer</span>
+      </div>
+      <div class="node">
+        <div class="node-title">Other application</div>
+        <div class="node-desc">Pulls any data it needs</div>
+        <span class="node-tag tag-gray">Consumer</span>
+      </div>
+    </div>
+  </div>
+</div>
+</body>
+</html>

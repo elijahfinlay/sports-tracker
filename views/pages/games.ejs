@@ -1,0 +1,76 @@
+<%- include('../partials/layout-start') %>
+
+<div class="page-header">
+  <div>
+    <h1>Games</h1>
+    <div class="subtitle"><%= games.length %> games</div>
+  </div>
+</div>
+
+<% if (flash) { %>
+  <div class="alert alert-<%= flash.type === 'error' ? 'error' : 'success' %>"><%= flash.message %></div>
+<% } %>
+
+<div class="card">
+  <h2>Filter</h2>
+  <form method="GET" action="/games">
+    <div class="field-row">
+      <div class="field">
+        <label>School</label>
+        <select name="school_id" onchange="this.form.submit()">
+          <option value="">All</option>
+          <% schools.forEach(s => { %><option value="<%= s.id %>" <%= filters.school_id == s.id ? 'selected' : '' %>><%= s.name %></option><% }) %>
+        </select>
+      </div>
+      <div class="field">
+        <label>Sport</label>
+        <select name="sport_id" onchange="this.form.submit()">
+          <option value="">All</option>
+          <% sports.forEach(sp => { %><option value="<%= sp.id %>" <%= filters.sport_id == sp.id ? 'selected' : '' %>><%= sp.name %></option><% }) %>
+        </select>
+      </div>
+      <div class="field">
+        <label>Status</label>
+        <select name="status" onchange="this.form.submit()">
+          <option value="">Any</option>
+          <% ['upcoming','today','in_progress','completed','cancelled'].forEach(s => { %>
+            <option value="<%= s %>" <%= filters.status === s ? 'selected' : '' %>><%= s %></option>
+          <% }) %>
+        </select>
+      </div>
+      <div class="field"><label>From</label><input type="date" name="date_from" value="<%= filters.date_from || '' %>" onchange="this.form.submit()"></div>
+      <div class="field"><label>To</label><input type="date" name="date_to" value="<%= filters.date_to || '' %>" onchange="this.form.submit()"></div>
+    </div>
+  </form>
+</div>
+
+<div class="card">
+  <h2>Games</h2>
+  <% if (games.length === 0) { %>
+    <div class="empty"><strong>No games match</strong>Adjust filters or run an OSAA sync.</div>
+  <% } else { %>
+    <table class="table">
+      <thead><tr><th>Date</th><th>Time</th><th>School</th><th>Sport</th><th>Opponent</th><th>Status</th><th>Photo</th><th>Call</th><th>Article</th></tr></thead>
+      <tbody>
+        <% games.forEach(g => { %>
+          <tr>
+            <td><a href="/games/<%= g.id %>"><%= g.game_date %></a></td>
+            <td><%= g.game_time || '—' %></td>
+            <td><%= g.school_name %></td>
+            <td><%= g.sport_name %> <span class="muted"><%= g.level %></span></td>
+            <td><%= g.opponent || '—' %><% if (g.result) { %><br><span class="muted"><%= g.result %></span><% } %></td>
+            <td>
+              <% const tagClass = { upcoming:'tag-gray', today:'tag-blue', in_progress:'tag-amber', completed:'tag-green', cancelled:'tag-red' }[g.status] || 'tag-gray'; %>
+              <span class="tag <%= tagClass %>"><%= g.status %></span>
+            </td>
+            <td><%= g.photo_count > 0 ? g.photo_count : (g.photo_requested ? 'sent' : '—') %></td>
+            <td><%= g.call_count > 0 ? g.call_count : (g.call_requested ? 'queued' : '—') %></td>
+            <td><% if (g.article_id) { %><a href="/articles/<%= g.article_id %>">view</a><% } else { %>—<% } %></td>
+          </tr>
+        <% }) %>
+      </tbody>
+    </table>
+  <% } %>
+</div>
+
+<%- include('../partials/layout-end') %>
