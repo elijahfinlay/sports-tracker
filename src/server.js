@@ -25,6 +25,10 @@ const PORT = parseInt(process.env.PORT || '3000', 10);
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, '..', 'views'));
 
+// Trust the first proxy (Railway/Fly/etc terminate TLS in front of us).
+// Without this, secure cookies are rejected because Express thinks the request is HTTP.
+app.set('trust proxy', 1);
+
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(express.static(path.join(__dirname, '..', 'public')));
