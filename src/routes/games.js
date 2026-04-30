@@ -34,14 +34,47 @@ router.get('/games', (req, res) => {
 
   const schools = db.prepare('SELECT * FROM schools ORDER BY name').all();
   const sports = db.prepare('SELECT * FROM sports ORDER BY name').all();
+  const teams = db.prepare(`
+    SELECT t.id, t.level, s.name AS school_name, sp.name AS sport_name
+    FROM teams t
+    JOIN schools s ON s.id = t.school_id
+    JOIN sports sp ON sp.id = t.sport_id
+    WHERE t.is_active = 1
+    ORDER BY s.name, sp.name
+  `).all();
 
   res.render('pages/games', {
     title: 'Games',
-    games, schools, sports,
+    games, schools, sports, teams,
     filters: { school_id, sport_id, status, date_from, date_to },
     flash: req.session.flash || null,
   });
   delete req.session.flash;
+});
+
+router.post('/games', (req, res) => {
+  const { team_id, opponent, game_date, game_time, status, location } = req.body;
+  if (!team_id || !game_date) {
+    req.session.flash = { type: 'error', message: 'Team and game date are required.' };
+    return res.redirect('/games');
+  }
+  try {
+    db.prepare(`
+      INSERT INTO games (team_id, opponent, location, game_date, game_time, status)
+      VALUES (?, ?, ?, ?, ?, ?)
+    `).run(
+      parseInt(team_id, 10),
+      opponent || null,
+      location || null,
+      game_date,
+      game_time || null,
+      status || 'upcoming'
+    );
+    req.session.flash = { type: 'success', message: 'Game added.' };
+  } catch (e) {
+    req.session.flash = { type: 'error', message: e.message };
+  }
+  res.redirect('/games');
 });
 
 router.get('/games/:id', (req, res) => {

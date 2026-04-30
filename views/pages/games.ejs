@@ -45,6 +45,38 @@
 </div>
 
 <div class="card">
+  <h2>Add a game manually</h2>
+  <% if (teams.length === 0) { %>
+    <div class="empty">No active teams yet — add one under Schools &amp; Teams first.</div>
+  <% } else { %>
+    <form method="POST" action="/games">
+      <div class="field-row">
+        <div class="field">
+          <label>Team</label>
+          <select name="team_id" required>
+            <% teams.forEach(t => { %>
+              <option value="<%= t.id %>"><%= t.school_name %> — <%= t.sport_name %> (<%= t.level %>)</option>
+            <% }) %>
+          </select>
+        </div>
+        <div class="field"><label>Opponent</label><input type="text" name="opponent" placeholder="e.g. Glide"></div>
+        <div class="field"><label>Date</label><input type="date" name="game_date" required></div>
+        <div class="field"><label>Time</label><input type="time" name="game_time"></div>
+        <div class="field">
+          <label>Status</label>
+          <select name="status">
+            <% ['upcoming','today','in_progress','completed','cancelled'].forEach(s => { %>
+              <option value="<%= s %>" <%= s === 'completed' ? 'selected' : '' %>><%= s %></option>
+            <% }) %>
+          </select>
+        </div>
+      </div>
+      <button type="submit" class="btn btn-primary" style="margin-top:8px;">Add game</button>
+    </form>
+  <% } %>
+</div>
+
+<div class="card">
   <h2>Games</h2>
   <% if (games.length === 0) { %>
     <div class="empty"><strong>No games match</strong>Adjust filters or run an OSAA sync.</div>
