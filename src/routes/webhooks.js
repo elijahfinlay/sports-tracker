@@ -107,9 +107,9 @@ router.post('/retell/call-complete', async (req, res) => {
   // Accept without strict verification if no key configured. Otherwise, verify.
   const apiKey = settings.get('retell_api_key') || process.env.RETELL_API_KEY;
   const sig = req.header('x-retell-signature');
-  if (apiKey && sig) {
+  if (apiKey && sig && req.rawBody) {
     const crypto = require('crypto');
-    const computed = crypto.createHmac('sha256', apiKey).update(JSON.stringify(req.body)).digest('hex');
+    const computed = crypto.createHmac('sha256', apiKey).update(req.rawBody).digest('hex');
     if (computed !== sig) {
       logEvent('error', 'Retell webhook signature mismatch');
       return res.status(403).send('Invalid signature');

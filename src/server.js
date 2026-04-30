@@ -29,6 +29,12 @@ app.set('views', path.join(__dirname, '..', 'views'));
 // Without this, secure cookies are rejected because Express thinks the request is HTTP.
 app.set('trust proxy', 1);
 
+// Capture raw body for the Retell webhook so HMAC verification matches the bytes Retell signed.
+// Must be registered BEFORE express.json() — once json() consumes the stream, the raw bytes are gone.
+app.use('/webhooks/retell', express.json({
+  verify: (req, _res, buf) => { req.rawBody = buf; },
+}));
+
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(express.static(path.join(__dirname, '..', 'public')));
