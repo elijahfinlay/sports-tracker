@@ -23,7 +23,17 @@
   <div class="btn-row" style="margin-top:16px;">
     <form method="POST" action="/games/<%= game.id %>/sync" style="display:inline;"><button class="btn btn-secondary">Sync from OSAA</button></form>
     <form method="POST" action="/games/<%= game.id %>/send-photo-request" style="display:inline;"><button class="btn btn-secondary">Send photo request now</button></form>
-    <form method="POST" action="/games/<%= game.id %>/trigger-call" style="display:inline;"><button class="btn btn-secondary">Trigger call now</button></form>
+    <form method="POST" action="/games/<%= game.id %>/trigger-call" style="display:inline-flex; gap:6px; align-items:center;">
+      <% if (teamContacts && teamContacts.length > 1) { %>
+        <select name="contact_id" style="padding:6px 8px;">
+          <option value="">Primary (default)</option>
+          <% teamContacts.forEach(tc => { %>
+            <option value="<%= tc.id %>"><%= tc.name %><%= tc.role ? ' — ' + tc.role : '' %><%= tc.is_primary ? ' (primary)' : '' %></option>
+          <% }) %>
+        </select>
+      <% } %>
+      <button class="btn btn-secondary">Trigger call now</button>
+    </form>
     <form method="POST" action="/games/<%= game.id %>/generate-article" style="display:inline;"><button class="btn btn-secondary">Generate article</button></form>
   </div>
 </div>

@@ -32,8 +32,14 @@ async function triggerCall(gameId, opts = {}) {
   `).get(gameId);
   if (!game) throw new Error(`Game ${gameId} not found`);
 
-  const contact = db.prepare(`SELECT * FROM contacts WHERE team_id = ? AND is_primary = 1 AND is_active = 1 LIMIT 1`).get(game.team_id);
-  if (!contact) return { skipped: 'No primary contact for team.' };
+  let contact;
+  if (opts.contactId) {
+    contact = db.prepare(`SELECT * FROM contacts WHERE id = ? AND team_id = ? AND is_active = 1`).get(opts.contactId, game.team_id);
+    if (!contact) return { skipped: 'Selected contact is inactive or not on this team.' };
+  } else {
+    contact = db.prepare(`SELECT * FROM contacts WHERE team_id = ? AND is_primary = 1 AND is_active = 1 LIMIT 1`).get(game.team_id);
+    if (!contact) return { skipped: 'No primary contact for team.' };
+  }
   if (!contact.phone) return { skipped: `${contact.name} has no phone.` };
 
   const r = await fetch(`${BASE}/v2/create-phone-call`, {

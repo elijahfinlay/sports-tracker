@@ -101,10 +101,11 @@ router.get('/games/:id', (req, res) => {
   const articles = db.prepare('SELECT * FROM articles WHERE game_id = ? ORDER BY created_at DESC').all(id);
   const events = db.prepare(`SELECT * FROM notification_log WHERE related_game_id = ? ORDER BY created_at DESC LIMIT 50`).all(id);
   const contact = db.prepare(`SELECT * FROM contacts WHERE team_id = ? AND is_primary = 1 AND is_active = 1 LIMIT 1`).get(game.team_id);
+  const teamContacts = db.prepare(`SELECT * FROM contacts WHERE team_id = ? AND is_active = 1 AND phone IS NOT NULL ORDER BY is_primary DESC, name`).all(game.team_id);
 
   res.render('pages/game-detail', {
     title: `${game.school_name} ${game.sport_name}`,
-    game, photos, calls, texts, articles, events, contact,
+    game, photos, calls, texts, articles, events, contact, teamContacts,
     flash: req.session.flash || null,
   });
   delete req.session.flash;
@@ -136,8 +137,9 @@ router.post('/games/:id/send-photo-request', async (req, res) => {
 
 router.post('/games/:id/trigger-call', async (req, res) => {
   const id = parseInt(req.params.id, 10);
+  const contactId = req.body.contact_id ? parseInt(req.body.contact_id, 10) : null;
   try {
-    const r = await triggerCall(id, { manual: true });
+    const r = await triggerCall(id, { manual: true, contactId });
     req.session.flash = r.skipped ? { type: 'error', message: r.skipped } : { type: 'success', message: 'Call initiated.' };
   } catch (e) {
     req.session.flash = { type: 'error', message: e.message };
