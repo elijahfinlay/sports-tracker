@@ -12,12 +12,10 @@ const router = express.Router();
 router.post('/twilio/incoming', async (req, res) => {
   const fullUrl = `${req.protocol}://${req.get('host')}${req.originalUrl}`;
 
-  // Validate signature when we have an auth token configured.
-  if (settings.get('twilio_auth_token') || process.env.TWILIO_AUTH_TOKEN) {
-    if (!twilio.validateRequest(req, fullUrl)) {
-      logEvent('error', `Twilio webhook signature failed for ${req.body.From || 'unknown'}`);
-      return res.status(403).send('Invalid signature');
-    }
+  // Always require a valid signature; with no auth token configured nothing can be verified.
+  if (!twilio.validateRequest(req, fullUrl)) {
+    logEvent('error', `Twilio webhook signature failed for ${req.body.From || 'unknown'}`);
+    return res.status(403).send('Invalid signature');
   }
 
   const from = req.body.From;

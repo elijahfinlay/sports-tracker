@@ -42,6 +42,10 @@ app.use(express.static(path.join(__dirname, '..', 'public')));
 // Keep the session DB next to the main DB so a single mounted volume covers both.
 const sessionDir = path.dirname(process.env.DATABASE_PATH || './data/sports.db');
 
+if (process.env.NODE_ENV === 'production' && !process.env.SESSION_SECRET) {
+  throw new Error('SESSION_SECRET must be set in production');
+}
+
 app.use(session({
   store: new SQLiteStore({ db: 'sessions.db', dir: sessionDir }),
   secret: process.env.SESSION_SECRET || 'dev-only-not-secure',
